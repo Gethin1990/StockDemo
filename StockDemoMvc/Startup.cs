@@ -31,8 +31,8 @@ namespace StockDemoMvc
             services.AddMemoryCache();
             services.AddTransient<IStockService, StockService>();
             services.AddSingleton<IFactory, CalculationFactory>();
-            services.AddTransient<IStrategy, ShanghaiStockExchangeIndexStrategy>();
-            services.AddTransient<IStrategyContext, StrategyContext>();
+            services.AddSingleton<IStrategy, ShanghaiStockExchangeIndexStrategy>();
+            services.AddSingleton<IStrategyContext, StrategyContext>();
             services.AddControllersWithViews();
         }
 

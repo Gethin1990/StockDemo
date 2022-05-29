@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DomainModel\StockDemo.Entities.csproj" />
+    <ProjectReference Include="..\Entities\StockDemo.Entities.csproj" />
   </ItemGroup>
 
   <ItemGroup>

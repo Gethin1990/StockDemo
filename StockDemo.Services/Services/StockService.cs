@@ -23,6 +23,7 @@ namespace StockDemo.Services
         private readonly Storage _storage;
         private readonly IConfiguration _configuration;
         private readonly StockCodeEnum baseType = StockCodeEnum.ShanghaiCompositeIndex;
+        private readonly int _cacheExpirationMinutes;
 
         public StockService(IFactory factory, IStrategyContext strategyContext, IMemoryCache cache, IConfiguration configuration)
         {
@@ -32,6 +33,7 @@ namespace StockDemo.Services
             _configuration = configuration;
             var storagePath = _configuration.GetSection("StoragePath").Value;
             _storage = Storage.GetInstance(storagePath);
+            _cacheExpirationMinutes = int.Parse(_configuration.GetSection("cacheExpirationMinutes").Value);
         }
 
 
@@ -47,7 +49,7 @@ namespace StockDemo.Services
                 if (res == null || res.Count() == 0)
                 {
                     var data = CalculateModel(request, type);
-                    _cache.Set(cacheKey, data);
+                    _cache.Set(cacheKey, data, new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(_cacheExpirationMinutes)));
                 }
                 else
                 {
@@ -55,13 +57,13 @@ namespace StockDemo.Services
                     if (res.LastOrDefault().Date < request.EndTime)
                     {
                         var data = CalculateModel(request, type);
-                        _cache.Set(cacheKey, data);
+                        _cache.Set(cacheKey, data, new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(_cacheExpirationMinutes)));
                     }
                 }
                 res = _cache.Get<List<CalculationModel>>(cacheKey);
                 var r = res?.Where(t => t.Date <= request.EndTime)?.ToList();
                 if (r != null) { result.AddRange(r); }
-                
+
             }
             return result;
         }
