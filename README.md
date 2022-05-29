@@ -48,5 +48,7 @@ Infrastructure 提供了系统的基础架构包括 泛型工厂，策略类，�
 ## Technology Points
 
 设计模式：单例（存储），泛型工厂（用于生成计算模型），策略（用于替换算法）
-架构：内存存储，二级缓存，MVC
+
+架构：内存存储，二级缓存，MVC，API
+
 技术：EChart，MemoryCache，Web API, MVC，Moq，Csv,Ajax
