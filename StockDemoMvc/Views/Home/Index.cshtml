@@ -1,0 +1,201 @@
+﻿@model StockDemoMvc.Models.StockViewModel
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <div class="container">
+        <div>
+
+            <span style="color: #000;" class="controlSpan">起始日期：</span>
+            <input type="date" id="startdate" placeholder="yyyy-MM-dd">
+
+            <span style="color: #000;" class="controlSpan">结束日期：</span>
+            <input type="date" id="enddate">
+
+            <span style="color: #000;" class="controlSpan">股票代码：</span>
+            @Html.LabelFor(m => m.SelectStocks, "请选择股票代码") <br />
+            @Html.ListBoxFor(m => m.SelectStocks, Model.AllStocks, new { @class = "chosen", multiple = "multiple", style = "width:350px;" }) <br />
+
+            <button onclick="refresh()">查询</button>
+
+        </div>
+        <div class="row">
+            <div class="col" id="left" style="width: 400px;height:400px;">
+
+            </div>
+            <div class="col" id="right" style="width: 400px;height:400px;">
+
+            </div>
+        </div>
+        <div class="row">
+            <div class="col" id="bottom" style="width: 800px;height:400px;">
+
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+    var mybottomChart = echarts.init(document.getElementById('bottom'));
+
+        var bottomoption = {
+            title: {
+                text: ''
+            },
+            tooltip: {},
+            legend: {
+                data: ['']
+            },
+            xAxis: {
+                data: []
+            },
+            yAxis: {},
+            series: [{
+                name: '',
+                type: 'bar',
+                data: []
+            }]
+        };
+
+        mybottomChart.setOption(bottomoption);
+
+        window.onload = function () {
+            $.ajax({
+                url: "/api/stock/",
+                type: "get",
+                dataType: "json",
+                data: {},
+                success: function (data) {
+                    mybottomChart.hideLoading();
+                    mybottomChart.setOption({
+                        title: {
+                            text: data.code
+                        },
+                        legend: {
+                            data: ['value']
+                        },
+                        xAxis: {
+                            data: data.date
+                        },
+                        yAxis: {},
+                        series: [{
+                            // 根据名字对应到相应的系列
+                            name: 'value',
+                            data: data.relativeIncome
+                        }]
+                    });
+                }
+            });
+        }
+
+        function refresh() {
+            mybottomChart.showLoading();
+            var startdate = $("#startdate").val();
+            var enddate = $("#enddate").val();
+            var types = $("#SelectStocks").val();
+
+            if (startdate == '') { startdate = this.getTime() }
+            if (enddate == '') { enddate = this.getTime() }
+
+            var t = []
+            for (let i = 0; i < types.length; i++) { t.push(Number(types[i]))}
+           
+
+
+            var request = {
+                "startTime": startdate,
+                "endTime": enddate,
+                "stockType": t
+            }
+
+            //request = { "startTime": "2019-03-01", "endTime": "2019-03-10", "stockType": [600519,601066] }
+
+            $.ajax({
+                url: "api/Stock/relativeIncomeCalculation",
+                type: "post",
+                dataType: "json",
+                contentType: 'application/json',
+                data: JSON.stringify(request),
+
+                success: function (data) {
+                    mybottomChart.hideLoading();
+                    mybottomChart.setOption({
+                        title: {
+                            text: '上证指数相对收益'
+                        },
+                        legend: {
+                            data: ['平安银行', '贵州茅台', '中信建投', '华兴源创', '同达创业']
+                        },
+                        xAxis: {
+                            data: data[0].date
+                        },
+                        yAxis: {},
+                        series: [{
+                            // 根据名字对应到相应的系列
+                            name: '平安银行',
+                            type: 'line',
+                            data: data[0].relativeIncome
+                        },
+                        {
+                            // 根据名字对应到相应的系列
+                            name: '贵州茅台',
+                            type: 'line',
+                            data: data[1].relativeIncome
+                        },
+                        {
+                            // 根据名字对应到相应的系列
+                            name: '中信建投',
+                            type: 'line',
+                            data: data[2].relativeIncome
+                        },
+                        {
+                            // 根据名字对应到相应的系列
+                            name: '华兴源创',
+                            type: 'line',
+                            data: data[3].relativeIncome
+                        },
+                        {
+                            // 根据名字对应到相应的系列
+                            name: '同达创业',
+                            type: 'line',
+                            data: data[4].relativeIncome
+                        }]
+                    });
+                }
+            });
+        };
+
+        function getTime() {
+            Date.prototype.Format = function (fmt) {
+                var o = {
+                    "M+": this.getMonth() + 1, //月份
+                    "d+": this.getDate(), //日
+                    "H+": this.getHours(), //小时
+                    "m+": this.getMinutes(), //分
+                    "s+": this.getSeconds(), //秒
+                    "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+                    S: this.getMilliseconds() //毫秒
+                };
+                if (/(y+)/.test(fmt))
+                    fmt = fmt.replace(
+                        RegExp.$1,
+                        (this.getFullYear() + "").substr(4 - RegExp.$1.length)
+                    );
+                for (var k in o)
+                    if (new RegExp("(" + k + ")").test(fmt))
+                        fmt = fmt.replace(
+                            RegExp.$1,
+                            RegExp.$1.length == 1
+                                ? o[k]
+                                : ("00" + o[k]).substr(("" + o[k]).length)
+                        );
+                return fmt;
+            };
+
+            var a = new Date().Format("yyyy-MM-dd");
+
+            return (this.nowtime = a);
+        }
+
+    </script>
+</div>
